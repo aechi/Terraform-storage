@@ -87,7 +87,7 @@ steps:
   inputs:
     command: 'init'
     provider: 'azurerm'
-    workingDirectory: '$(System.DefaultWorkingDirectory)'
+    workingDirectory: '$(System.DefaultWorkingDirectory)/terraform'
     backendServiceArm: '$(serviceConnectionName)'
     backendAzureRmResourceGroupName: '$(resource_group_name)'
     backendAzureRmResourceGroupLocation: '$(location)'
