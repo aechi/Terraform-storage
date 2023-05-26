@@ -15,6 +15,6 @@ variable "functionapp_storage_account_name" {
   type = string
 }
  
-variable "azurerm_windows_function_app_name" {
+variable "azurerm_linux_function_app_name" {
   type = string
 }

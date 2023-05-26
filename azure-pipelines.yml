@@ -3,7 +3,7 @@
 # Add steps that build, run tests, deploy
  
 trigger:
-- main
+  - main
  
 pool:
   vmImage: ubuntu-latest
@@ -20,13 +20,13 @@ variables:
   - name: serviceConnectionName
     value: 'SRVCONAPPAUTH'
   - name: resource_group_name
-    value: appservice
+    value: appservice2023
   - name: storage_account_name
-    value: rkazdostfstorage
+    value: azdostfstorage2023
   - name: functionapp_storage_account_name
-    value: rkfunctionappstor01
-  - name: azurerm_windows_function_app_name
-    value: rkfunctionapp01
+    value: functionappstor2023
+  - name: azurerm_linux_function_app_name
+    value: functionapp2023
  
 # Part of the Starter YAML pipeline template and is good example for debugging.
 steps:
@@ -43,7 +43,7 @@ steps:
 # Configure Azure Provider
 # This is optional but just for debugging purposes and test the AzureCLI task
 - task: AzureCLI@2
-  condition: false
+  condition: true
   inputs:
     azureSubscription: $(serviceConnectionName)
     scriptType: 'pscore'
@@ -55,7 +55,7 @@ steps:
 # At the minimum need a resource group that is containing the essential storage account for the terraform statefile.
 - task: AzureCLI@2
   displayName: 'Create resource group $(resource_group_name)'
-  condition: false
+  condition: true
   inputs:
     azureSubscription: $(serviceConnectionName)
     scriptType: 'bash'
@@ -70,7 +70,7 @@ steps:
 # By placing it in a storage account, promotes collaboration so that other devops engineers can update and run the terraform code.
 - task: AzureCLI@2
   displayName: 'Create storage account $(storage_account_name) for terraform state files'
-  condition: false
+  condition: true
   inputs:
     azureSubscription: $(serviceConnectionName)
     scriptType: 'bash'
@@ -106,7 +106,7 @@ steps:
     command: 'plan'
     workingDirectory: '$(System.DefaultWorkingDirectory)/terraform'
     environmentServiceNameAzureRM: '$(serviceConnectionName)' # Service connection or to override the subscription id defined in a Subscription scoped service connection
-    commandOptions: '-var "environment=$(environment)" -var "resource_group_name=$(resource_group_name)" -var "location=$(location)" -var "functionapp_storage_account_name=$(functionapp_storage_account_name)"  -var "azurerm_windows_function_app_name=$(azurerm_windows_function_app_name)" -input=false'
+    commandOptions: '-var "environment=$(environment)" -var "resource_group_name=$(resource_group_name)" -var "location=$(location)" -var "functionapp_storage_account_name=$(functionapp_storage_account_name)"  -var "azurerm_linux_function_app_name=$(azurerm_linux_function_app_name)" -input=false'
     # The -input=false option indicates that Terraform should not attempt to prompt for input, and instead expect all necessary values to be provided by either configuration files or the command line
  
 # Provisions the specified resources in your infrastructure, updates existing resources 
@@ -117,7 +117,7 @@ steps:
     command: 'apply'
     workingDirectory: '$(System.DefaultWorkingDirectory)/terraform'
     environmentServiceNameAzureRM: '$(serviceConnectionName)' # Service connection or to override the subscription id defined in a Subscription scoped service connection
-    commandOptions: '-var "environment=$(environment)" -var "resource_group_name=$(resource_group_name)" -var "location=$(location)" -var "functionapp_storage_account_name=$(functionapp_storage_account_name)" -var "azurerm_windows_function_app_name=$(azurerm_windows_function_app_name)" -input=false'
+    commandOptions: '-var "environment=$(environment)" -var "resource_group_name=$(resource_group_name)" -var "location=$(location)" -var "functionapp_storage_account_name=$(functionapp_storage_account_name)" -var "azurerm_linux_function_app_name=$(azurerm_linux_function_app_name)" -input=false'
  
 # Delete the azure resources under terraform management. This has a conditional flag to manually enable when need.
 - task: TerraformTaskV3@0
@@ -127,7 +127,7 @@ steps:
     command: 'destroy'
     workingDirectory: '$(System.DefaultWorkingDirectory)/terraform'
     environmentServiceNameAzureRM: '$(serviceConnectionName)' # Service connection or to override the subscription id defined in a Subscription scoped service connection
-    commandOptions: '-var "environment=$(environment)" -var "location=$(location)" -var "functionapp_storage_account_name=$(functionapp_storage_account_name)  -var "azurerm_windows_function_app_name=$(azurerm_windows_function_app_name)" "'
+    commandOptions: '-var "environment=$(environment)" -var "location=$(location)" -var "functionapp_storage_account_name=$(functionapp_storage_account_name)  -var "azurerm_linux_function_app_name=$(azurerm_linux_function_app_name)" "'
  
 - script: |
     echo Finished  demo execution

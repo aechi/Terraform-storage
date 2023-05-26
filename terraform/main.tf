@@ -20,7 +20,7 @@ resource "azurerm_service_plan" "example" {
 }
  
 resource "azurerm_windows_function_app" "example" {
-  name                = var.azurerm_windows_function_app_name
+  name                = var.azurerm_linux_function_app_name
   resource_group_name = data.azurerm_resource_group.rg.name
   location            = var.location
  
