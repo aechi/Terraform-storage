@@ -3,14 +3,6 @@ data "azurerm_resource_group" "rg" {
 }
  
  
-resource "azurerm_storage_account" "example" {
-  name                     = var.functionapp_storage_account_name
-  resource_group_name      = data.azurerm_resource_group.rg.name
-  location                 = var.location
-  account_tier             = "Standard"
-  account_replication_type = "LRS"
-}
- 
 resource "azurerm_service_plan" "example" {
   name                = "app-service-plan2023"
   resource_group_name = data.azurerm_resource_group.rg.name
@@ -19,15 +11,12 @@ resource "azurerm_service_plan" "example" {
   sku_name            = "F1"
 }
  
-resource "azurerm_windows_function_app" "example" {
+resource "azurerm_linux_web_app" "example" {
   name                = var.azurerm_linux_function_app_name
   resource_group_name = data.azurerm_resource_group.rg.name
   location            = var.location
- 
-  storage_account_name       = azurerm_storage_account.example.name
-  storage_account_access_key = azurerm_storage_account.example.primary_access_key
   service_plan_id            = azurerm_service_plan.example.id
- 
+
     site_config { 
     always_on               = false
     application_stack {
