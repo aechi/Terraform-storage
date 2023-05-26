@@ -65,15 +65,15 @@ steps:
 
 
 - task: AzureCLI@2
-  displayName: 'Create container $(container) within storage account $(storage_account_name)'
+  displayName: 'Create container $(container) within storage account $(storageAccount)'
   condition: true
   inputs:
     azureSubscription: $(subscription)
     scriptType: 'bash'
     scriptLocation: 'inlineScript'
     inlineScript: |
-      storage_account_key=$(az storage account keys list --account-name $(storage_account_name) --resource-group $(resourceGroup) --query "[0].value" --output tsv)
-      az storage container create --name $(container) --account-name $(storage_account_name) --account-key $storage_account_key
+      storage_account_key=$(az storage account keys list --account-name $(storageAccount) --resource-group $(resourceGroup) --query "[0].value" --output tsv)
+      az storage container create --name $(container) --account-name $(storageAccount) --account-key $storage_account_key
 
 # We move to next part witch is init terrafom :
 # Install files we need and prepare the place where to store state file 
