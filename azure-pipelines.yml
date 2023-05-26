@@ -24,7 +24,7 @@ variables:
   - name: storage_account_name
     value: azdostfstorage2023
   - name: functionapp_storage_account_name
-    value: functionappstor2023
+    value: functionappstor052023
   - name: azurerm_linux_function_app_name
     value: functionapp2023
   - name: container_name
@@ -57,7 +57,7 @@ steps:
 # At the minimum need a resource group that is containing the essential storage account for the terraform statefile.
 - task: AzureCLI@2
   displayName: 'Create resource group $(resource_group_name)'
-  condition: true
+  condition: false
   inputs:
     azureSubscription: $(serviceConnectionName)
     scriptType: 'bash'
@@ -72,7 +72,7 @@ steps:
 # By placing it in a storage account, promotes collaboration so that other devops engineers can update and run the terraform code.
 - task: AzureCLI@2
   displayName: 'Create storage account $(storage_account_name) for terraform state files'
-  condition: true
+  condition: false
   inputs:
     azureSubscription: $(serviceConnectionName)
     scriptType: 'bash'
@@ -82,7 +82,7 @@ steps:
 
 - task: AzureCLI@2
   displayName: 'Create container $(backendAzureRmContainerName) within storage account $(storage_account_name)'
-  condition: true
+  condition: false
   inputs:
     azureSubscription: $(serviceConnectionName)
     scriptType: 'bash'
