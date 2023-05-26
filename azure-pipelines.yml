@@ -104,7 +104,7 @@ steps:
   displayName: 'Terraform plan'
   inputs:
     command: 'plan'
-    workingDirectory: '$(System.DefaultWorkingDirectory)'
+    workingDirectory: '$(System.DefaultWorkingDirectory)/terraform'
     environmentServiceNameAzureRM: '$(serviceConnectionName)' # Service connection or to override the subscription id defined in a Subscription scoped service connection
     commandOptions: '-var "environment=$(environment)" -var "resource_group_name=$(resource_group_name)" -var "location=$(location)" -var "functionapp_storage_account_name=$(functionapp_storage_account_name)"  -var "azurerm_linux_function_app_name=$(azurerm_linux_function_app_name)" -input=false'
     # The -input=false option indicates that Terraform should not attempt to prompt for input, and instead expect all necessary values to be provided by either configuration files or the command line
@@ -115,7 +115,7 @@ steps:
   displayName: 'Terraform apply'
   inputs:
     command: 'apply'
-    workingDirectory: '$(System.DefaultWorkingDirectory)'
+    workingDirectory: '$(System.DefaultWorkingDirectory)/terraform'
     environmentServiceNameAzureRM: '$(serviceConnectionName)' # Service connection or to override the subscription id defined in a Subscription scoped service connection
     commandOptions: '-var "environment=$(environment)" -var "resource_group_name=$(resource_group_name)" -var "location=$(location)" -var "functionapp_storage_account_name=$(functionapp_storage_account_name)" -var "azurerm_linux_function_app_name=$(azurerm_linux_function_app_name)" -input=false'
  
