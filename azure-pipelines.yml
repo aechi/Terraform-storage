@@ -1,11 +1,11 @@
-# trigger:
-# - master
+trigger:
+  - master
 
 pool:
   vmImage: 'ubuntu-latest'
 
 variables:
-  subscription: SRVCONNECTION
+  subscription: SRVCONAPPAUTH
   resourceGroup: resourcegroup-tfstate
   storageAccount: terraformstaccountstate
   container: tfstate
