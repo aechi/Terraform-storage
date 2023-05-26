@@ -10,13 +10,57 @@ variables:
   storageAccount: terraformstaccountstate
   container: tfstate
   tfstateFile: terraform.tfstate
+  location: westeurope
 
 steps:
 
+- script: echo Hello, world!
+  displayName: 'Run a one-line script'
+ 
+# Install Terraform
+# Since using MS hosted agent, need to install the terraform and indicate the version.
 - task: TerraformInstaller@0
-  displayName: install Terraform v0.12.28
+  displayName: install terraform
   inputs:
-    terraformVersion: '0.12.28'
+    terraformVersion: latest
+ 
+# Configure Azure Provider
+# This is optional but just for debugging purposes and test the AzureCLI task
+- task: AzureCLI@2
+  condition: false
+  inputs:
+    azureSubscription: $(subscription)
+    scriptType: 'pscore'
+    scriptLocation: 'inlineScript'
+    inlineScript: |
+      az account show
+ 
+# Need to create a resource group for the solution to be deployed. 
+# At the minimum need a resource group that is containing the essential storage account for the terraform statefile.
+- task: AzureCLI@2
+  displayName: 'Create resource group $(resourceGroup)'
+  condition: false
+  inputs:
+    azureSubscription: $(subscription)
+    scriptType: 'bash'
+    scriptLocation: 'inlineScript'
+    inlineScript: |
+      az group create -n $(resourceGroup) -l $(location)
+ 
+# A storage account is needed to store the terraform statefile. 
+# A Terraform state file is a # file that Terraform uses to store the state of the resources that it manages.
+# The state file keeps track of the current state of the infrastructure, and Terraform uses this 
+# information to determine the changes that need to be made to the infrastructure to bring it to the desired state.
+# By placing it in a storage account, promotes collaboration so that other devops engineers can update and run the terraform code.
+- task: AzureCLI@2
+  displayName: 'Create storage account $(storageAccount) for terraform state files'
+  condition: false
+  inputs:
+    azureSubscription: $(subscription)
+    scriptType: 'bash'
+    scriptLocation: 'inlineScript'
+    inlineScript: |
+      az storage account create -n $(storageAccount) -g $(resourceGroup) -l $(location) --sku Standard_LRS
 
 # We move to next part witch is init terrafom :
 # Install files we need and prepare the place where to store state file 
