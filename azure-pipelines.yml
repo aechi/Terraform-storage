@@ -18,7 +18,7 @@ variables:
   - name: subscriptionId
     value: 97c37559-6638-46e2-9ef5-451dd20445e0
   - name: serviceConnectionName
-    value: 'SRVCONNECTION'
+    value: 'SRVCONAPPAUTH'
   - name: resource_group_name
     value: appservice
   - name: storage_account_name
