@@ -43,7 +43,7 @@ steps:
 # Configure Azure Provider
 # This is optional but just for debugging purposes and test the AzureCLI task
 - task: AzureCLI@2
-  condition: true
+  condition: false
   inputs:
     azureSubscription: $(serviceConnectionName)
     scriptType: 'pscore'
@@ -55,7 +55,7 @@ steps:
 # At the minimum need a resource group that is containing the essential storage account for the terraform statefile.
 - task: AzureCLI@2
   displayName: 'Create resource group $(resource_group_name)'
-  condition: true
+  condition: false
   inputs:
     azureSubscription: $(serviceConnectionName)
     scriptType: 'bash'
