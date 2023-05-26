@@ -27,6 +27,8 @@ variables:
     value: functionappstor2023
   - name: azurerm_linux_function_app_name
     value: functionapp2023
+  - name: container_name
+    value: terraform-state
  
 # Part of the Starter YAML pipeline template and is good example for debugging.
 steps:
@@ -87,7 +89,7 @@ steps:
     scriptLocation: 'inlineScript'
     inlineScript: |
       storage_account_key=$(az storage account keys list --account-name $(storage_account_name) --resource-group $(resource_group_name) --query "[0].value" --output tsv)
-      az storage container create --name $(backendAzureRmContainerName) --account-name $(storage_account_name) --account-key $storage_account_key
+      az storage container create --name $(container_name) --account-name $(storage_account_name) --account-key $storage_account_key
 
  
 # Initialize Terraform 
@@ -103,7 +105,7 @@ steps:
     backendAzureRmResourceGroupName: '$(resource_group_name)'
     backendAzureRmResourceGroupLocation: '$(location)'
     backendAzureRmStorageAccountName: '$(storage_account_name)'
-    backendAzureRmContainerName: 'terraform-state'
+    backendAzureRmContainerName: $(container_name)
     backendAzureRmKey: 'terraform.tfstate'
     commandOptions: '-lock=false'
      
