@@ -35,16 +35,11 @@ steps:
  
 # Install Terraform
 # Since using MS hosted agent, need to install the terraform and indicate the version.
-# - task: TerraformInstaller@0
-#   displayName: install terraform
-#   inputs:
-#     terraformVersion: latest
- 
 - task: TerraformInstaller@0
-  displayName: install Terraform v0.12.28
+  displayName: install terraform
   inputs:
-    terraformVersion: '0.12.28'
-
+    terraformVersion: latest
+ 
 # Configure Azure Provider
 # This is optional but just for debugging purposes and test the AzureCLI task
 - task: AzureCLI@2
@@ -92,7 +87,7 @@ steps:
   inputs:
     command: 'init'
     provider: 'azurerm'
-    workingDirectory: '$(System.DefaultWorkingDirectory)/terraform'
+    workingDirectory: '$(System.DefaultWorkingDirectory)'
     backendServiceArm: '$(serviceConnectionName)'
     backendAzureRmResourceGroupName: '$(resource_group_name)'
     backendAzureRmResourceGroupLocation: '$(location)'
@@ -109,7 +104,7 @@ steps:
   displayName: 'Terraform plan'
   inputs:
     command: 'plan'
-    workingDirectory: '$(System.DefaultWorkingDirectory)/terraform'
+    workingDirectory: '$(System.DefaultWorkingDirectory)'
     environmentServiceNameAzureRM: '$(serviceConnectionName)' # Service connection or to override the subscription id defined in a Subscription scoped service connection
     commandOptions: '-var "environment=$(environment)" -var "resource_group_name=$(resource_group_name)" -var "location=$(location)" -var "functionapp_storage_account_name=$(functionapp_storage_account_name)"  -var "azurerm_linux_function_app_name=$(azurerm_linux_function_app_name)" -input=false'
     # The -input=false option indicates that Terraform should not attempt to prompt for input, and instead expect all necessary values to be provided by either configuration files or the command line
@@ -120,7 +115,7 @@ steps:
   displayName: 'Terraform apply'
   inputs:
     command: 'apply'
-    workingDirectory: '$(System.DefaultWorkingDirectory)/terraform'
+    workingDirectory: '$(System.DefaultWorkingDirectory)'
     environmentServiceNameAzureRM: '$(serviceConnectionName)' # Service connection or to override the subscription id defined in a Subscription scoped service connection
     commandOptions: '-var "environment=$(environment)" -var "resource_group_name=$(resource_group_name)" -var "location=$(location)" -var "functionapp_storage_account_name=$(functionapp_storage_account_name)" -var "azurerm_linux_function_app_name=$(azurerm_linux_function_app_name)" -input=false'
  
