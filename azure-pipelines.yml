@@ -3,7 +3,7 @@
 # Add steps that build, run tests, deploy
  
 trigger:
-  - main
+  - terraform_storage_account_azcli
  
 pool:
   vmImage: ubuntu-latest
