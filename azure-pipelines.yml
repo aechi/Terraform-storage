@@ -1,56 +1,16 @@
-# trigger:
-# - master
-
-pool:
-  vmImage: 'ubuntu-latest'
-
-variables:
-  subscription: SRVCONNECTION
-  resourceGroup: resourcegroup-tfstate
-  storageAccount: terraformstaccountstate
-  container: tfstate
-  tfstateFile: terraform.tfstate
+trigger:
+  branches:
+    include:
+      - main
 
 steps:
+- checkout: self
 
-- task: TerraformInstaller@0
-  displayName: install Terraform v0.12.28
-  inputs:
-    terraformVersion: '0.12.28'
-
-# We move to next part witch is init terrafom :
-# Install files we need and prepare the place where to store state file 
-# The state file contain the current state of cloud config
-# We can put this file in own build machine 
-# Or we can make it in a persistance and secure place like an azure storage 
-# In sotrage acount i had create a container1. A container is like a storage space to stor files
-#   
-- task: TerraformTaskV1@0
-  displayName: terraform init
-  inputs:
-    provider: 'azurerm'
-    command: 'init'
-    workingDirectory: '$(System.DefaultWorkingDirectory)/terraform'
-    backendServiceArm: '$(subscription)'
-    backendAzureRmResourceGroupName: '$(resourceGroup)'
-    backendAzureRmStorageAccountName: '$(storageAccount)'
-    backendAzureRmContainerName: '$(container)'
-    backendAzureRmKey: '$(tfstateFile)'
-
-- task: TerraformTaskV1@0
-  displayName: terraform plan -out=tfplan
-  inputs:
-    provider: 'azurerm'
-    command: 'plan'
-    workingDirectory: '$(System.DefaultWorkingDirectory)/terraform'
-    commandOptions: '-out=tfplan'
-    environmentServiceNameAzureRM: '$(subscription)'
-
-- task: TerraformTaskV1@0
-  displayName: terraform apply tfplan
-  inputs:
-    provider: 'azurerm'
-    command: 'apply'
-    workingDirectory: '$(System.DefaultWorkingDirectory)/terraform'
-    commandOptions: 'tfplan'
-    environmentServiceNameAzureRM: '$(subscription)'
+- script: |
+    # Initialize Terraform
+    ls -l
+    cd $(Build.SourcesDirectory)/terraform
+    ls -l
+    terraform init
+    terraform plan
+    terraform apply -auto-approve
