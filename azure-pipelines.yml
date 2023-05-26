@@ -18,7 +18,7 @@ variables:
   - name: subscriptionId
     value: 97c37559-6638-46e2-9ef5-451dd20445e0
   - name: serviceConnectionName
-    value: 'SRVCONAPPAUTH'
+    value: SRVCONAPPAUTH
   - name: resource_group_name
     value: appservice2023
   - name: storage_account_name
@@ -87,7 +87,7 @@ steps:
   inputs:
     command: 'init'
     provider: 'azurerm'
-    workingDirectory: '$(System.DefaultWorkingDirectory)'
+    workingDirectory: '$(System.DefaultWorkingDirectory)/terraform'
     backendServiceArm: '$(serviceConnectionName)'
     backendAzureRmResourceGroupName: '$(resource_group_name)'
     backendAzureRmResourceGroupLocation: '$(location)'
