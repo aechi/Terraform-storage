@@ -1,56 +1,134 @@
-# trigger:
-# - master
-
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy
+ 
+trigger:
+- main
+ 
 pool:
-  vmImage: 'ubuntu-latest'
-
+  vmImage: ubuntu-latest
+ 
+ 
+# Define variables
 variables:
-  subscription: SRVCONNECTION
-  resourceGroup: resourcegroup-tfstate
-  storageAccount: terraformstaccountstate
-  container: tfstate
-  tfstateFile: terraform.tfstate
-
+  - name: environment
+    value: dev
+  - name: location
+    value: westeurope
+  - name: subscriptionId
+    value: 97c37559-6638-46e2-9ef5-451dd20445e0
+  - name: serviceConnectionName
+    value: 'SRVCONNECTION'
+  - name: resource_group_name
+    value: appservice
+  - name: storage_account_name
+    value: rkazdostfstorage
+  - name: functionapp_storage_account_name
+    value: rkfunctionappstor01
+  - name: azurerm_windows_function_app_name
+    value: rkfunctionapp01
+ 
+# Part of the Starter YAML pipeline template and is good example for debugging.
 steps:
-
+- script: echo Hello, world!
+  displayName: 'Run a one-line script'
+ 
+# Install Terraform
+# Since using MS hosted agent, need to install the terraform and indicate the version.
 - task: TerraformInstaller@0
-  displayName: install Terraform v0.12.28
+  displayName: install terraform
   inputs:
-    terraformVersion: '0.12.28'
-
-# We move to next part witch is init terrafom :
-# Install files we need and prepare the place where to store state file 
-# The state file contain the current state of cloud config
-# We can put this file in own build machine 
-# Or we can make it in a persistance and secure place like an azure storage 
-# In sotrage acount i had create a container1. A container is like a storage space to stor files
-#   
-- task: TerraformTaskV1@0
-  displayName: terraform init
+    terraformVersion: latest
+ 
+# Configure Azure Provider
+# This is optional but just for debugging purposes and test the AzureCLI task
+- task: AzureCLI@2
+  condition: false
   inputs:
-    provider: 'azurerm'
+    azureSubscription: $(serviceConnectionName)
+    scriptType: 'pscore'
+    scriptLocation: 'inlineScript'
+    inlineScript: |
+      az account show
+ 
+# Need to create a resource group for the solution to be deployed. 
+# At the minimum need a resource group that is containing the essential storage account for the terraform statefile.
+- task: AzureCLI@2
+  displayName: 'Create resource group $(resource_group_name)'
+  condition: false
+  inputs:
+    azureSubscription: $(serviceConnectionName)
+    scriptType: 'bash'
+    scriptLocation: 'inlineScript'
+    inlineScript: |
+      az group create -n $(resource_group_name) -l $(location)
+ 
+# A storage account is needed to store the terraform statefile. 
+# A Terraform state file is a # file that Terraform uses to store the state of the resources that it manages.
+# The state file keeps track of the current state of the infrastructure, and Terraform uses this 
+# information to determine the changes that need to be made to the infrastructure to bring it to the desired state.
+# By placing it in a storage account, promotes collaboration so that other devops engineers can update and run the terraform code.
+- task: AzureCLI@2
+  displayName: 'Create storage account $(storage_account_name) for terraform state files'
+  condition: false
+  inputs:
+    azureSubscription: $(serviceConnectionName)
+    scriptType: 'bash'
+    scriptLocation: 'inlineScript'
+    inlineScript: |
+      az storage account create -n $(storage_account_name) -g $(resource_group_name) -l $(location) --sku Standard_LRS
+ 
+ 
+# Initialize Terraform 
+# This initializes ensuring that Terraform has the necessary information to manage the infrastructure, 
+# including the plugins for the providers that you are using, the state of your resources, and the backend to store the state file.
+- task: TerraformTaskV2@2
+  displayName: 'Terraform init'
+  inputs:
     command: 'init'
-    workingDirectory: '$(System.DefaultWorkingDirectory)/terraform'
-    backendServiceArm: '$(subscription)'
-    backendAzureRmResourceGroupName: '$(resourceGroup)'
-    backendAzureRmStorageAccountName: '$(storageAccount)'
-    backendAzureRmContainerName: '$(container)'
-    backendAzureRmKey: '$(tfstateFile)'
-
-- task: TerraformTaskV1@0
-  displayName: terraform plan -out=tfplan
-  inputs:
     provider: 'azurerm'
+    workingDirectory: '$(System.DefaultWorkingDirectory)/terraform'
+    backendServiceArm: '$(serviceConnectionName)'
+    backendAzureRmResourceGroupName: '$(resource_group_name)'
+    backendAzureRmResourceGroupLocation: '$(location)'
+    backendAzureRmStorageAccountName: '$(storage_account_name)'
+    backendAzureRmContainerName: 'terraform-state'
+    backendAzureRmKey: 'terraform.tfstate'
+    commandOptions: '-lock=false'
+     
+# The terraform plan command takes your Terraform configuration as input and compares the desired state specified 
+# in the configuration to the current state stored in the Terraform state file. 
+# It then generates an execution plan, which is a summary of the changes that Terraform will make to your infrastructure 
+# in order to bring it in line with the desired state specified in the configuration.
+- task: TerraformTaskV3@0
+  displayName: 'Terraform plan'
+  inputs:
     command: 'plan'
     workingDirectory: '$(System.DefaultWorkingDirectory)/terraform'
-    commandOptions: '-out=tfplan'
-    environmentServiceNameAzureRM: '$(subscription)'
-
-- task: TerraformTaskV1@0
-  displayName: terraform apply tfplan
+    environmentServiceNameAzureRM: '$(serviceConnectionName)' # Service connection or to override the subscription id defined in a Subscription scoped service connection
+    commandOptions: '-var "environment=$(environment)" -var "resource_group_name=$(resource_group_name)" -var "location=$(location)" -var "functionapp_storage_account_name=$(functionapp_storage_account_name)"  -var "azurerm_windows_function_app_name=$(azurerm_windows_function_app_name)" -input=false'
+    # The -input=false option indicates that Terraform should not attempt to prompt for input, and instead expect all necessary values to be provided by either configuration files or the command line
+ 
+# Provisions the specified resources in your infrastructure, updates existing resources 
+# as necessary, and deletes any resources that are no longer specified in your Terraform # configuration.
+- task: TerraformTaskV3@0
+  displayName: 'Terraform apply'
   inputs:
-    provider: 'azurerm'
     command: 'apply'
     workingDirectory: '$(System.DefaultWorkingDirectory)/terraform'
-    commandOptions: 'tfplan'
-    environmentServiceNameAzureRM: '$(subscription)'
+    environmentServiceNameAzureRM: '$(serviceConnectionName)' # Service connection or to override the subscription id defined in a Subscription scoped service connection
+    commandOptions: '-var "environment=$(environment)" -var "resource_group_name=$(resource_group_name)" -var "location=$(location)" -var "functionapp_storage_account_name=$(functionapp_storage_account_name)" -var "azurerm_windows_function_app_name=$(azurerm_windows_function_app_name)" -input=false'
+ 
+# Delete the azure resources under terraform management. This has a conditional flag to manually enable when need.
+- task: TerraformTaskV3@0
+  displayName: 'Terraform destroy'
+  condition: false # disable destroying
+  inputs:
+    command: 'destroy'
+    workingDirectory: '$(System.DefaultWorkingDirectory)/terraform'
+    environmentServiceNameAzureRM: '$(serviceConnectionName)' # Service connection or to override the subscription id defined in a Subscription scoped service connection
+    commandOptions: '-var "environment=$(environment)" -var "location=$(location)" -var "functionapp_storage_account_name=$(functionapp_storage_account_name)  -var "azurerm_windows_function_app_name=$(azurerm_windows_function_app_name)" "'
+ 
+- script: |
+    echo Finished  demo execution
+  displayName: 'Run a multi-line script'

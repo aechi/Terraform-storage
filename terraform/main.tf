@@ -1,19 +1,32 @@
-terraform {
-  backend "azurerm" {
-  }
+data "azurerm_resource_group" "rg" {
+  name = var.resource_group_name
 }
-
-provider "azurerm" {
-  # Configuration options
-  skip_provider_registration = "true"
-  subscription_id = "97c37559-6638-46e2-9ef5-451dd20445e0"
-  tenant_id = "c6537e5c-aa83-4924-886b-877ad74ea895"
-  client_id = "d2313b26-81e7-44aa-ab80-89c87e6f649f"
-  client_secret = "XXXX"
-features {}
+ 
+ 
+resource "azurerm_storage_account" "example" {
+  name                     = var.functionapp_storage_account_name
+  resource_group_name      = data.azurerm_resource_group.rg.name
+  location                 = var.location
+  account_tier             = "Standard"
+  account_replication_type = "LRS"
 }
-
-resource "azurerm_resource_group" "rg" {
-  name     = "resourcegroup-test-tbd-3"
-  location = "westeurope"
+ 
+resource "azurerm_service_plan" "example" {
+  name                = "rk-app-service-plan01"
+  resource_group_name = data.azurerm_resource_group.rg.name
+  location            = var.location
+  os_type             = "Linux"
+  sku_name            = "F1"
+}
+ 
+resource "azurerm_windows_function_app" "example" {
+  name                = var.azurerm_windows_function_app_name
+  resource_group_name = data.azurerm_resource_group.rg.name
+  location            = var.location
+ 
+  storage_account_name       = azurerm_storage_account.example.name
+  storage_account_access_key = azurerm_storage_account.example.primary_access_key
+  service_plan_id            = azurerm_service_plan.example.id
+ 
+  site_config {}
 }
