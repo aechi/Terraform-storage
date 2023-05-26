@@ -12,7 +12,7 @@ resource "azurerm_storage_account" "example" {
 }
  
 resource "azurerm_service_plan" "example" {
-  name                = "rk-app-service-plan01"
+  name                = "app-service-plan2023"
   resource_group_name = data.azurerm_resource_group.rg.name
   location            = var.location
   os_type             = "Linux"
@@ -28,5 +28,10 @@ resource "azurerm_windows_function_app" "example" {
   storage_account_access_key = azurerm_storage_account.example.primary_access_key
   service_plan_id            = azurerm_service_plan.example.id
  
-  site_config {}
+    site_config { 
+    always_on               = false
+    application_stack {
+      java_version           = "11"      
+    }
+  }
 }

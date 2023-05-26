@@ -43,7 +43,7 @@ steps:
 # Configure Azure Provider
 # This is optional but just for debugging purposes and test the AzureCLI task
 - task: AzureCLI@2
-  condition: false
+  condition: true
   inputs:
     azureSubscription: $(serviceConnectionName)
     scriptType: 'pscore'
@@ -55,7 +55,7 @@ steps:
 # At the minimum need a resource group that is containing the essential storage account for the terraform statefile.
 - task: AzureCLI@2
   displayName: 'Create resource group $(resource_group_name)'
-  condition: false
+  condition: true
   inputs:
     azureSubscription: $(serviceConnectionName)
     scriptType: 'bash'
@@ -70,14 +70,16 @@ steps:
 # By placing it in a storage account, promotes collaboration so that other devops engineers can update and run the terraform code.
 - task: AzureCLI@2
   displayName: 'Create storage account $(storage_account_name) for terraform state files'
-  condition: false
+  condition: true
   inputs:
     azureSubscription: $(serviceConnectionName)
     scriptType: 'bash'
     scriptLocation: 'inlineScript'
     inlineScript: |
       az storage account create -n $(storage_account_name) -g $(resource_group_name) -l $(location) --sku Standard_LRS
- 
+      storage_account_key=$(az storage account keys list --account-name $(storage_account_name) --resource-group $(resource_group_name) --query "[0].value" --output tsv)
+      az storage container create --name $(backendAzureRmContainerName) --account-name $(storage_account_name) --account-key $storage_account_key
+
  
 # Initialize Terraform 
 # This initializes ensuring that Terraform has the necessary information to manage the infrastructure, 
