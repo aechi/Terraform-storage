@@ -70,7 +70,7 @@ steps:
 # By placing it in a storage account, promotes collaboration so that other devops engineers can update and run the terraform code.
 - task: AzureCLI@2
   displayName: 'Create storage account $(storage_account_name) for terraform state files'
-  condition: true
+  condition: false
   inputs:
     azureSubscription: $(serviceConnectionName)
     scriptType: 'bash'
