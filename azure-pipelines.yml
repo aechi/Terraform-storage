@@ -23,8 +23,6 @@ variables:
     value: appservice2023
   - name: storage_account_name
     value: azdostfstorage2023
-  - name: functionapp_storage_account_name
-    value: functionappstor052023
   - name: azurerm_linux_web_app
     value: functionapp052023
   - name: container_name
@@ -119,7 +117,7 @@ steps:
     command: 'plan'
     workingDirectory: '$(System.DefaultWorkingDirectory)/terraform'
     environmentServiceNameAzureRM: '$(serviceConnectionName)' # Service connection or to override the subscription id defined in a Subscription scoped service connection
-    commandOptions: '-var "environment=$(environment)" -var "resource_group_name=$(resource_group_name)" -var "location=$(location)" -var "functionapp_storage_account_name=$(functionapp_storage_account_name)"  -var "azurerm_linux_web_app=$(azurerm_linux_web_app)" -input=false'
+    commandOptions: '-var "environment=$(environment)" -var "resource_group_name=$(resource_group_name)" -var "location=$(location)" -var "azurerm_linux_web_app=$(azurerm_linux_web_app)" -input=false'
     # The -input=false option indicates that Terraform should not attempt to prompt for input, and instead expect all necessary values to be provided by either configuration files or the command line
  
 # Provisions the specified resources in your infrastructure, updates existing resources 
@@ -140,7 +138,7 @@ steps:
     command: 'destroy'
     workingDirectory: '$(System.DefaultWorkingDirectory)/terraform'
     environmentServiceNameAzureRM: '$(serviceConnectionName)' # Service connection or to override the subscription id defined in a Subscription scoped service connection
-    commandOptions: '-var "environment=$(environment)" -var "location=$(location)" -var "functionapp_storage_account_name=$(functionapp_storage_account_name)  -var "azurerm_linux_web_app=$(azurerm_linux_web_app)" "'
+    commandOptions: '-var "environment=$(environment)" -var "location=$(location)" -var "azurerm_linux_web_app=$(azurerm_linux_web_app)" "'
  
 - script: |
     echo Finished  demo execution
